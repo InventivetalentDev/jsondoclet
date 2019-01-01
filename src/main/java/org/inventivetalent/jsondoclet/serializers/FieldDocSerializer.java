@@ -9,6 +9,7 @@ import com.sun.javadoc.FieldDoc;
 import java.lang.reflect.Type;
 
 import static org.inventivetalent.jsondoclet.serializers.SerializerUtils.serializeDocInto;
+import static org.inventivetalent.jsondoclet.serializers.SerializerUtils.serializeTypeInto;
 
 public class FieldDocSerializer implements JsonSerializer<FieldDoc> {
 	@Override
@@ -19,8 +20,7 @@ public class FieldDocSerializer implements JsonSerializer<FieldDoc> {
 
 
 		json.addProperty("name", fieldDoc.name());
-		json.addProperty("type", fieldDoc.type().qualifiedTypeName());
-		json.addProperty("typeDimensions", fieldDoc.type().dimension());
+		json.add("type",  serializeTypeInto(fieldDoc.type(), new JsonObject(), jsonSerializationContext));
 		json.addProperty("isStatic", fieldDoc.isStatic());
 
 		return json;
