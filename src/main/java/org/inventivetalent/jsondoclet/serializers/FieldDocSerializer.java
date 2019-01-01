@@ -22,6 +22,7 @@ public class FieldDocSerializer implements JsonSerializer<FieldDoc> {
 		json.addProperty("name", fieldDoc.name());
 		json.add("type",  serializeTypeInto(fieldDoc.type(), new JsonObject(), jsonSerializationContext));
 		json.addProperty("isStatic", fieldDoc.isStatic());
+		json.addProperty("constantValue", fieldDoc.constantValueExpression());
 
 		return json;
 	}
