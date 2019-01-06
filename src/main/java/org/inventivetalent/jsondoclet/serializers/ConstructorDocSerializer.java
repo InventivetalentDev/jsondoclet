@@ -19,6 +19,7 @@ public class ConstructorDocSerializer implements JsonSerializer<ConstructorDoc> 
 		serializeDocInto(constructorDoc, json, jsonSerializationContext);
 
 		json.addProperty("signature", constructorDoc.signature());
+		json.addProperty("flatSignature", constructorDoc.flatSignature());
 		json.add("parameters",jsonSerializationContext.serialize(constructorDoc.parameters()));
 		json.add("typeParameters", jsonSerializationContext.serialize(constructorDoc.typeParameters()));
 

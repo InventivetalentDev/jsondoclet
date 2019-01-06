@@ -20,6 +20,7 @@ public class MethodDocSerializer implements JsonSerializer<MethodDoc> {
 
 		json.addProperty("name", methodDoc.name());
 		json.addProperty("signature", methodDoc.signature());
+		json.addProperty("flatSignature", methodDoc.flatSignature());
 		json.add("returnType", serializeTypeInto(methodDoc.returnType(), new JsonObject(), jsonSerializationContext));
 		json.addProperty("isAbstract", methodDoc.isAbstract());
 		json.addProperty("isDefault", methodDoc.isDefault());
