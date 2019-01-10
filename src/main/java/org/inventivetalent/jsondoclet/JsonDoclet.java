@@ -10,24 +10,39 @@ import org.inventivetalent.jsondoclet.serializers.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class JsonDoclet extends Doclet {
+
+	public static Map<String, List<String>> subClasses    = new HashMap<>();
+	public static Map<String, List<String>> subInterfaces = new HashMap<>();
 
 	public static boolean start(RootDoc root) {
 		System.out.println(root.name());
 
 		File outFile = null;
+		File outDir = null;
 		boolean pretty = false;
 		boolean singleFile = false;
+		boolean indexFile = false;
 		for (String[] pair : root.options()) {
 			if ("-outfile".equals(pair[0])) {
 				outFile = new File(pair[1]);
+			}
+			if ("-outdir".equals(pair[0])) {
+				outDir = new File(pair[1]);
 			}
 			if ("-pretty".equals(pair[0])) {
 				pretty = true;
 			}
 			if ("-singlefile".equals(pair[0])) {
 				singleFile = true;
+			}
+			if ("-indexfile".equals(pair[0])) {
+				indexFile = true;
 			}
 		}
 		if (outFile == null) {
@@ -48,6 +63,11 @@ public class JsonDoclet extends Doclet {
 			builder.setPrettyPrinting();
 		}
 
+		for (ClassDoc doc : root.classes()) {
+			updateSubInterfaces(doc);
+			updateSubClasses(doc);
+		}
+
 		Gson gson = builder.create();
 
 		if (singleFile) {
@@ -61,14 +81,14 @@ public class JsonDoclet extends Doclet {
 
 			try (FileWriter writer = new FileWriter(outFile)) {
 				writer.write(gson.toJson(json));
-				return true;
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
-		} else {
+		}
+		if (indexFile) {
 			System.out.println("Generating JSON folder structure and index.json");
 
-			outFile.mkdirs();
+			outDir.mkdirs();
 
 			JsonObject index = new JsonObject();
 
@@ -102,7 +122,7 @@ public class JsonDoclet extends Doclet {
 				String filePath = classDoc.containingPackage().name().replaceAll("\\.", "/");
 				indexEntry.addProperty("path", filePath + "/" + classDoc.name() + ".json");
 
-				File classDirectory = new File(outFile, filePath);
+				File classDirectory = new File(outDir, filePath);
 				if (!classDirectory.exists()) {
 					classDirectory.mkdirs();
 				}
@@ -114,17 +134,21 @@ public class JsonDoclet extends Doclet {
 					e.printStackTrace();
 				}
 			}
-			try (FileWriter writer = new FileWriter(new File(outFile, "index.json"))) {
+			try (FileWriter writer = new FileWriter(new File(outDir, "index.json"))) {
 				writer.write(gson.toJson(index));
-				return true;
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
 		}
+
+		return true;
 	}
 
 	public static int optionLength(String option) {
 		if ("-outfile".equals(option)) {
+			return 2;
+		}
+		if ("-outdir".equals(option)) {
 			return 2;
 		}
 		if ("-pretty".equals(option)) {
@@ -133,7 +157,41 @@ public class JsonDoclet extends Doclet {
 		if ("-singlefile".equals(option)) {
 			return 1;
 		}
+		if ("-indexfile".equals(option)) {
+			return 1;
+		}
 		return 0;
+	}
+
+	static void updateSubInterfaces(ClassDoc doc) {
+		ClassDoc[] interfaces = doc.interfaces();
+		for (int i = 0; i < interfaces.length; i++) {
+			if (updateSubMapping(subInterfaces, interfaces[i].qualifiedName(), doc.qualifiedName())) {
+				updateSubInterfaces(interfaces[i]);
+			}
+		}
+	}
+
+	static void updateSubClasses(ClassDoc doc) {
+		ClassDoc superclass = doc.superclass();
+		if (superclass != null) {
+			if (updateSubMapping(subClasses, superclass.qualifiedName(), doc.qualifiedName())) {
+				updateSubClasses(superclass);
+			}
+		}
+	}
+
+	static boolean updateSubMapping(Map<String, List<String>> map, String superclass, String doc) {
+		List<String> list = map.get(superclass);
+		if (list == null) {
+			list = new ArrayList<>();
+			map.put(superclass, list);
+		}
+		if (list.contains(doc)) {
+			return false;
+		}
+		list.add(doc);
+		return true;
 	}
 
 	// Required for everything to work properly, e.g. isEnum always returns false if this is missing

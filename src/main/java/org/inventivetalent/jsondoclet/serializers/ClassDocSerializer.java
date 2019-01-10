@@ -3,6 +3,7 @@ package org.inventivetalent.jsondoclet.serializers;
 import com.google.gson.*;
 import com.sun.javadoc.ClassDoc;
 import com.sun.javadoc.FieldDoc;
+import org.inventivetalent.jsondoclet.JsonDoclet;
 
 import java.lang.reflect.Type;
 
@@ -40,6 +41,9 @@ public class ClassDocSerializer implements JsonSerializer<ClassDoc> {
 		json.add("fields", jsonSerializationContext.serialize(classDoc.fields()));
 		json.add("methods", jsonSerializationContext.serialize(classDoc.methods()));
 		json.add("typeParameters", jsonSerializationContext.serialize(classDoc.typeParameters()));
+
+		json.add("subInterfaces", jsonSerializationContext.serialize(JsonDoclet.subInterfaces.get(classDoc.qualifiedName())));
+		json.add("subClasses", jsonSerializationContext.serialize(JsonDoclet.subClasses.get(classDoc.qualifiedName())));
 
 		JsonArray enumArray = new JsonArray();
 		for (FieldDoc e : classDoc.enumConstants()) {
