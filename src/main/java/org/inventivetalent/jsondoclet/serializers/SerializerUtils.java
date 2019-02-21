@@ -36,6 +36,7 @@ public class SerializerUtils {
 	public static JsonObject serializeDocInto(Doc doc, JsonObject json,JsonSerializationContext context) {
 		if (doc != null) {
 			json.addProperty("name", doc.name());
+			json.addProperty("comment", doc.commentText());
 			json.addProperty("isClass", doc.isClass());
 			json.addProperty("isInterface", doc.isInterface());
 			json.addProperty("isEnum", doc.isEnum());
